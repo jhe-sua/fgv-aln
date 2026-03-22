@@ -1,10 +1,11 @@
 import numpy as np
-import timeit
 from time import perf_counter, perf_counter_ns
+import matplotlib.pyplot as plt
 
 sample_A = np.random.randint(1, 10, (2,2))
 sample_B = np.random.randint(1, 10, (2,2))
 
+# Questão 1
 # Item A)
 def mat_prod(A: np.matrix, B: np.matrix) -> np.matrix:
     m, k = A.shape
@@ -32,16 +33,16 @@ for shape_a, shape_b in zip(A_shps, B_shps):
         data["A"].append(A)
         data["B"].append(B)
 
-# Function for measure the time of item B, C and D
+# funcao para medir o tempo do item B, C, D
 def time_matrix_product_measure(function):
     print(function.__name__, ": \n")
     
     for A, B, times in zip(data["A"], data["B"], data["times"]):
 
-        # heating
+        # esquentamento
         function(A, B)
 
-        #time
+        # tempo
         time = []
 
         for _ in range(times):
@@ -76,13 +77,12 @@ def mat_prod_dot(A, B):
 # Item D)
 # time_matrix_product_measure(np.matmul)
 
-C = np.array([2,4,6,8])
-A = np.array([1,2,3,4])
-B = np.array([3,7,9,0])
 
+# Questã0 2
 
+# Item A)
 def solve_tridiag(A:np.ndarray, b:np.ndarray) -> np.ndarray:
-    """resolve um sistema tridiagonal
+    """resolve um sistema tridiagonal que não produz 0's na eliminacao
 
     Parameters
     ----------
@@ -96,18 +96,122 @@ def solve_tridiag(A:np.ndarray, b:np.ndarray) -> np.ndarray:
     np.ndarray
         solução do sistema
     """
-    A_c = [A[0]]
+
+    u = A.diagonal(1)
+    d = A.diagonal()
+    l = A.diagonal(-1)
+
+    size = len(d)
+    d_c = [d[0]]
+    b_c = [b[0]]
+
+    # Eliminação abaixo
+    for i in range(size-1):
+        di_c = d[i+1] - (l[i]/d_c[i])*u[i]
+        d_c.append(di_c)
+        
+        bi_c = b[i+1] - (l[i]/d_c[i])*b_c[i]
+        b_c.append(bi_c)
+
+    # Substituicao
+    x = np.zeros(size)
+
+    # Primeira
+    x[size -1] = (b_c[size -1])/d_c[size -1]
+
+    # Restantes
+    for i in range(size - 2, -1, -1):
+        x[i] = (b_c[i] - u[i]*x[i+1])/d_c[i]
+
+    return x
+
+# Item B)
+# Para verificar se a funcao esta correta soluciono com np e calculo o erro
+
+def gerar_tridiagonal(n):
+
+    # diagonais inferior e superior
+    l = np.random.randint(1, 3, size=n-1)
+    u = np.random.uniform(1, 3, size=n-1)
+    
+    # diagonal principal
+    d = np.abs(l) + np.abs(u)
+
+    # ajusta tamanho
+    d = np.append(d, np.abs(l[-1]) + 1)
+
+    # garante que não sejam gerados 0's na eliminacao
+    d = d + 1
+    
+    A = np.diag(d) + np.diag(u, k=1) + np.diag(l, k=-1)
+    return A
+
+def gerar_b(n):
+    b = np.random.uniform(1, 3, size=n)
+    return b
+
+# gerar matrizes e b's de tamanho 2, 3, 4, ..., 100
+matrizes = []
+bs = []
+
+for n in range(2, 501):
+    A = gerar_tridiagonal(n)
+    b = gerar_b(n)
+
+    matrizes.append(A)
+    bs.append(b)
+
+# Calcular erro
+# for cada_matriz, cada_b in zip(matrizes, bs):
+#     err = np.linalg.solve(cada_matriz, cada_b) - solve_tridiag(cada_matriz, cada_b)
+#     err = err * err
+#     numeric_err = np.sum(err)
+#     print(numeric_err)
+
+# Item C)
+"""
+Complexidade O(n) pois qualquer linha de codigo se repete no maximo x vezes
+"""
+
+# Item D)
+
+#Funcao para medir tempo
+def measure_time(function):
+    def wrap(*args, **kwargs):
+        #esquentamento
+        function(*args, **kwargs)
+        function(*args, **kwargs)
+        function(*args, **kwargs)
+        function(*args, **kwargs)
 
 
-    for i in range(1, len(A), 1):
-         a_i = A[i] - (C[i]/A_c[i-1])*B[i-1]
-         A_c.append(a_i)
+        inicio = perf_counter()
+        function(*args, **kwargs)
+        fim = perf_counter()
 
-    print(A_c)
+        return fim - inicio
+    return wrap
+
+shapes = [n for n in range(2, 501)]
+tempos_eu = [measure_time(solve_tridiag)(A,b) for A, b in zip(matrizes, bs)]
+tempos_np = [measure_time(np.linalg.solve)(A,b) for A, b in zip(matrizes, bs)]
+
+fig, ax = plt.subplots()
+
+ax.plot(shapes, tempos_eu, label="Tempo solve_tridiag")
+ax.plot(shapes, tempos_np, label="Tempo numpy")
+ax.legend()
+ax.grid()
+
+plt.savefig("teste1.png")
 
 
 
-solve_tridiag(A, B)
+
+
+
+
+
          
 
 
