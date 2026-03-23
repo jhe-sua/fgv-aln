@@ -2,9 +2,6 @@ import numpy as np
 from time import perf_counter, perf_counter_ns
 import matplotlib.pyplot as plt
 
-sample_A = np.random.randint(1, 10, (2,2))
-sample_B = np.random.randint(1, 10, (2,2))
-
 # Questão 1
 # Item A)
 def mat_prod(A: np.matrix, B: np.matrix) -> np.matrix:
@@ -131,7 +128,7 @@ def solve_tridiag(A:np.ndarray, b:np.ndarray) -> np.ndarray:
 def gerar_tridiagonal(n):
 
     # diagonais inferior e superior
-    l = np.random.randint(1, 3, size=n-1)
+    l = np.random.uniform(1, 3, size=n-1)
     u = np.random.uniform(1, 3, size=n-1)
     
     # diagonal principal
@@ -192,6 +189,7 @@ def measure_time(function):
         return fim - inicio
     return wrap
 
+
 shapes = [n for n in range(2, 501)]
 tempos_eu = [measure_time(solve_tridiag)(A,b) for A, b in zip(matrizes, bs)]
 tempos_np = [measure_time(np.linalg.solve)(A,b) for A, b in zip(matrizes, bs)]
@@ -203,15 +201,4 @@ ax.plot(shapes, tempos_np, label="Tempo numpy")
 ax.legend()
 ax.grid()
 
-plt.savefig("teste1.png")
-
-
-
-
-
-
-
-
-         
-
-
+plt.savefig(f"teste.png")
