@@ -1,16 +1,19 @@
+using LinearAlgebra
+using Random
 using BenchmarkTools
+using DataFrames
 
-# Questão 1
-# Item A)
-function mat_prod(A::Matrix, B::Matrix)
-    m, k = size(A)
-    n = size(B, 2)
-    C = zeros(m, n)
+################################ Questão 1 - A ################################
+
+function mat_prod(A, B)
+    m, n = size(A)
+    _, p = size(B)
+    C = zeros(m, p)
 
     for i in 1:m
-        for j in 1:n
-            for p in 1:k
-                C[i,j] += A[i, p]*B[p,j]
+        for j in 1:p
+            for k in 1:n
+                C[i,j] = A[i, k]*B[k,j]
             end
         end
     end
@@ -18,43 +21,85 @@ function mat_prod(A::Matrix, B::Matrix)
     return C
 end
 
-A_shps = ((1,1), (2,10),(15,10),(6,20),(500, 113), (500, 500), (400, 500), (1000, 1000))
-B_shps = ((1,1), (10,5),(10,2),(20,6),(113, 300), (500, 500), (500, 500), (1000, 1000))
-times = (10000, 9000, 8000, 7000, 10, 10, 10, 2)
-
-data = []
-
-for i in eachindex(A_shps)
-    # os ... significam desempacotamento
-    A = rand(A_shps[i]...)
-    B = rand(B_shps[i]...)
-
-    push!(data, (A=A, B=B, time=times[i]))
+################################ Questão 1 - B ################################
+# temos 3 classes de teste e em cada categoria de teste 2 tipos de teste
+# então ao total realizaremos 6 testes e mediremos seus tempos
+function medir_tempo(func, A, B; samples=10, evals=1)
+    bench = @benchmark $func($A, $B) samples=samples evals=evals
+    return median(bench).time / 1e9   # em segundos
 end
 
-# funcao para medir o tempo do item B, C, D
-function time_matrix_product_measure(funcao, data)
-    println(nameof(funcao))
+function test_prod(m, k, n, func)
+    Random.seed!(42)
+    A = randn(m, k)
+    B = randn(k, n)
 
-    results = []
+    # aquecimento
+    func(A, B)
+    func(A, B)
 
-    for item in data
-        A = item.A
-        B = item.B
+    return medir_tempo(func, A, B)
+end
 
-        # aquecimento
-        funcao(A, B)
+test_cases = Dict(
+    "m < n, pequena (15, 10, 30)" => (15, 10, 30),
+    "m > n, pequena (30, 10, 15)" => (30, 10, 15),
+    "m = n, pequena (30, 30, 30)" => (30, 30, 30),
+    #"m < n, grande (300, 200, 500)":(300, 200, 500), 
+    #"m > n, grande (500, 200, 300)":(500, 200, 300),
+    #"m = n, grande (500, 500, 500)":(500, 500, 500),
+)
 
-        # benchmark
-        trial = @benchmark $funcao($A, $B)
+function run_cases(func)
+    tempos = Float64[]
+    for (_, (m, k, n)) in test_cases
+        push!(tempos, test_prod(m, k, n, func))
+    end
+    return tempos
+end
 
-        push!(results, (
-            mean = mean(trial).time,
-            std = std(trial).time
-        ))
+tempos_mat_prod = run_cases(mat_prod)
+
+################################ Questão 1 - C ################################
+
+function mat_prod_dot(A,B)
+    m, _ = size(A)
+    _, p = size(B)
+    C = zeros(m,p)
+
+    for i in 1:m
+        for j in 1:p 
+            C[i, j] = dot(A[i,:], B[:,j])
+        end
     end
 
-    return results
+    return C
 end
 
-time_matrix_product_measure(mat_prod)
+tempos_mat_prod_dot = run_cases(mat_prod_dot)
+
+################################ Questão 1 - D ################################
+
+tempos_matmul = run_cases(np.matmul)
+
+nomes = collect(keys(test_cases))
+
+comp = DataFrame(
+    caso = nomes,
+    baseline = ones(length(t_mat_prod)),
+    mat_prod_dot = t_mat_prod ./ t_mat_prod_dot,
+    matmul = t_mat_prod ./ t_matmul
+)
+
+ex = DataFrame(
+    caso = nomes,
+    mat_prod = t_mat_prod,
+    mat_prod_dot = t_mat_prod_dot,
+    matmul = t_matmatmul
+)
+
+println("Quanto as outras funções são melhores?")
+println(comp)
+
+println("\nValores exatos de tempo")
+println(ex)

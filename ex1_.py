@@ -12,7 +12,7 @@ def mat_prod(A: np.matrix, B: np.matrix) -> np.matrix:
     for i in range(m):
         for j in range(p):
             for k in range(n):
-                C[i, j] += A[i, k]*B[k, j]           
+                C[i, j] = A[i, k]*B[k, j]           
 
     return C
 
@@ -29,14 +29,6 @@ def medir_tempo(func, *args, repeat=10):
         tempos.append(fim - inicio)
     return np.mean(tempos)
 
-tests_cases ={
-    "m < n, pequena (15, 10, 30)":(15, 10, 30),    
-    "m > n, pequena (30, 10, 15)":(30, 10, 15),    
-    "m = n, pequena (30, 30, 30)":(30, 30, 30), 
-    "m < n, grande (300, 200, 500)":(300, 200, 500), 
-    "m > n, grande (500, 200, 300)":(500, 200, 300),
-    "m = n, grande (500, 500, 500)":(500, 500, 500), 
-}
 
 def test_prod(m,k,n, func):
     np.random.seed(42)
@@ -50,11 +42,19 @@ def test_prod(m,k,n, func):
     tempo = medir_tempo(func, A, B)
     return tempo
 
+tests_cases ={
+    "m < n, pequena (15, 10, 30)":(15, 10, 30),    
+    "m > n, pequena (30, 10, 15)":(30, 10, 15),    
+    "m = n, pequena (30, 30, 30)":(30, 30, 30), 
+    #"m < n, grande (300, 200, 500)":(300, 200, 500), 
+    #"m > n, grande (500, 200, 300)":(500, 200, 300),
+    #"m = n, grande (500, 500, 500)":(500, 500, 500),
+}
+
 def run_cases(func):
     tempos = []
-    for nome, cada_caso in tests_cases.items():
-        m, k, n = cada_caso
-        tempo = test_prod(m, n, k, func)
+    for _, (m,k,n) in tests_cases.items():
+        tempo = test_prod(m, k, n, func)
         tempos.append(tempo)
     return tempos
 
