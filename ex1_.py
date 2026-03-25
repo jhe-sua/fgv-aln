@@ -46,9 +46,9 @@ tests_cases ={
     "m < n, pequena (15, 10, 30)":(15, 10, 30),    
     "m > n, pequena (30, 10, 15)":(30, 10, 15),    
     "m = n, pequena (30, 30, 30)":(30, 30, 30), 
-    #"m < n, grande (300, 200, 500)":(300, 200, 500), 
-    #"m > n, grande (500, 200, 300)":(500, 200, 300),
-    #"m = n, grande (500, 500, 500)":(500, 500, 500),
+    "m < n, grande (300, 200, 500)":(300, 200, 500), 
+    "m > n, grande (500, 200, 300)":(500, 200, 300),
+    "m = n, grande (500, 500, 500)":(500, 500, 500),
 }
 
 def run_cases(func):
@@ -109,6 +109,9 @@ ex = pd.DataFrame(
 )
 
 print("Quanto as outras funcoes são melhores?")
+comp.to_csv("comp_py.csv")
 print(comp)
+
 print("Valores exatos de tempo")
+ex.to_csv("exatos_py.csv")
 print(ex)

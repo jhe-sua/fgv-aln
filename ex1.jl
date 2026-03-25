@@ -2,6 +2,7 @@ using LinearAlgebra
 using Random
 using BenchmarkTools
 using DataFrames
+using CSV
 
 ################################ Questão 1 - A ################################
 
@@ -45,9 +46,9 @@ test_cases = Dict(
     "m < n, pequena (15, 10, 30)" => (15, 10, 30),
     "m > n, pequena (30, 10, 15)" => (30, 10, 15),
     "m = n, pequena (30, 30, 30)" => (30, 30, 30),
-    #"m < n, grande (300, 200, 500)":(300, 200, 500), 
-    #"m > n, grande (500, 200, 300)":(500, 200, 300),
-    #"m = n, grande (500, 500, 500)":(500, 500, 500),
+    "m < n, grande (300, 200, 500)" => (300, 200, 500), 
+    "m > n, grande (500, 200, 300)" => (500, 200, 300),
+    "m = n, grande (500, 500, 500)" => (500, 500, 500),
 )
 
 function run_cases(func)
@@ -79,27 +80,30 @@ end
 tempos_mat_prod_dot = run_cases(mat_prod_dot)
 
 ################################ Questão 1 - D ################################
+matmul = (A, B) -> A * B
 
-tempos_matmul = run_cases(np.matmul)
+tempos_matmul = run_cases(matmul)
 
 nomes = collect(keys(test_cases))
 
 comp = DataFrame(
     caso = nomes,
-    baseline = ones(length(t_mat_prod)),
-    mat_prod_dot = t_mat_prod ./ t_mat_prod_dot,
-    matmul = t_mat_prod ./ t_matmul
+    baseline = ones(length(tempos_mat_prod)),
+    mat_prod_dot = tempos_mat_prod ./ tempos_mat_prod_dot,
+    matmul = tempos_mat_prod ./ tempos_matmul
 )
 
 ex = DataFrame(
     caso = nomes,
-    mat_prod = t_mat_prod,
-    mat_prod_dot = t_mat_prod_dot,
-    matmul = t_matmatmul
+    mat_prod = tempos_mat_prod,
+    mat_prod_dot = tempos_mat_prod_dot,
+    matmul = tempos_matmul
 )
 
 println("Quanto as outras funções são melhores?")
+CSV.write("comp_jl.csv", comp)
 println(comp)
 
 println("\nValores exatos de tempo")
+CSV.write("exatos_jl.csv", ex)
 println(ex)
