@@ -3,16 +3,15 @@ import pandas as pd
 from time import perf_counter
 
 ################################ Questão 1 - A ################################
-
 def mat_prod(A: np.matrix, B: np.matrix) -> np.matrix:
     m, n = A.shape
     _, p = B.shape
     C = np.zeros((m, p))
     
     for i in range(m):
-        for j in range(p):
-            for k in range(n):
-                C[i, j] = A[i, k]*B[k, j]           
+        for k in range(n):
+            for j in range(p):
+                C[i, j] += A[i, k]*B[k, j]           
 
     return C
 
@@ -20,7 +19,7 @@ def mat_prod(A: np.matrix, B: np.matrix) -> np.matrix:
 # temos 3 classes de teste e em cada categoria de teste 2 tipos de teste
 # então ao total realizaremos 6 testes e mediremos seus tempos
 
-def medir_tempo(func, *args, repeat=10):
+def medir_tempo(func, *args, repeat=1):
     tempos = []
     for _ in range(repeat):
         inicio = perf_counter()
@@ -36,7 +35,6 @@ def test_prod(m,k,n, func):
     B = np.random.randn(k, n)
 
     # Esquentamento
-    mat_prod(A, B)
     mat_prod(A, B)
 
     tempo = medir_tempo(func, A, B)
