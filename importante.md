@@ -1,0 +1,1 @@
+Antes de velocidade queremos que o codigo funcione do jeito certo
